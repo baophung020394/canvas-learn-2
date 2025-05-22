@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas
+      id="myCanvasAnimation"
+      height="400"
+      width="400"
+      style="border: solid"
+    ></canvas>
+    <canvas
+      id="myCanvas"
+      height="400"
+      width="400"
+      style="background-color: #009bd7"
+    ></canvas>
+
+    <script>
+      const el = document.getElementById("myCanvas");
+      const ctx = el.getContext("2d");
+
+      // draw body
+
+      drawGridofSnowmen(80, 400, 400);
+      function drawGridofSnowmen(spacing, width, height) {
+        let x = spacing;
+        while (x < width) {
+          let y = spacing;
+          while (y < height) {
+            const scaleFactor = Math.random() + 0.5;
+            drawSnowman(x, y, 10, scaleFactor);
+            y = y + spacing;
+          }
+
+          x = x + spacing;
+        }
+      }
+
+      function drawSnowman(x1, y1, r1, scaleFactor) {
+        ctx.beginPath();
+        ctx.arc(x1, y1, r1, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        ctx.beginPath();
+        const r2 = r1 * scaleFactor,
+          x2 = x1,
+          y2 = y1 - r1 - r2; // 300 - 50 - 25 = 210
+
+        ctx.arc(x2, y2, r2, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.beginPath();
+        const r3 = r2 * scaleFactor,
+          x3 = x2,
+          y3 = y2 - r2 - r3; // 225 - 25 - 20 = 138
+
+        ctx.arc(x3, y3, r3, 0, Math.PI * 2);
+        ctx.fill();
+        // draw hat
+        drawHat(x3, y3, r3);
+      }
+
+      function drawHat(headX, headY, headRad) {
+        ctx.beginPath();
+        const w4 = headRad * 2,
+          h4 = headRad / 2,
+          x4 = headX - w4 / 2,
+          y4 = headY - headRad; // 138 - 34 =  104
+        ctx.rect(x4, y4, w4, h4);
+        ctx.stroke();
+        ctx.fillStyle = "black";
+        ctx.fill();
+
+        ctx.beginPath();
+        const w5 = w4 * 0.8,
+          h5 = headRad,
+          x5 = headX - w5 / 2,
+          y5 = y4 - h5;
+        ctx.rect(x5, y5, w5, h5);
+        ctx.stroke();
+        ctx.fill();
+      }
+
+      // Animation canvas
+      const elAni = document.getElementById("myCanvasAnimation");
+      const ctxAni = elAni.getContext("2d");
+
+      const minX = 100;
+      const rangeX = 200;
+      const minRad = 10;
+      const rangeRad = 20;
+      let p = 0;
+      let sign = 1;
+
+      animate();
+
+      function animate() {
+        const x = minX + rangeX * p; // 100 + 200 * 0
+        const rad = minRad + rangeRad * Math.sin(p * Math.PI);
+        p = p + 0.02 * sign;
+
+        if (p > 1 || p < 0) {
+          sign = sign * -1;
+        }
+
+        ctxAni.clearRect(0, 0, elAni.width, elAni.height);
+        ctxAni.beginPath();
+        ctxAni.arc(x, 200, rad, 0, Math.PI * 2);
+        ctxAni.stroke();
+
+        requestAnimationFrame(animate);
+      }
+    </script>
+  </body>
+</html>

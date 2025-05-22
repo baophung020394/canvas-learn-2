@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas
+      id="myCanvas"
+      style="border: 1px solid"
+      width="700"
+      height="700"
+    ></canvas>
+
+    <script>
+      const ctx = myCanvas.getContext("2d");
+
+      const flowers = [
+        {
+          centerX: 200,
+          centerY: 200,
+          innerPad: 25,
+          outerPadRange: [100, 50],
+          petalRadiusRange: [45, 15],
+          petalCount: 6,
+          color: "orange",
+          animationOffset: 0,
+          animationStyle: "lerp", // Lerp animation
+        },
+        {
+          centerX: 500,
+          centerY: 200,
+          innerPad: 20,
+          outerPadRange: [120, 70],
+          petalRadiusRange: [50, 20],
+          petalCount: 8,
+          color: "blue",
+          animationOffset: Math.PI / 4,
+          animationStyle: "rotate", // Continuous rotation
+        },
+        {
+          centerX: 350,
+          centerY: 500,
+          innerPad: 30,
+          outerPadRange: [90, 40],
+          petalRadiusRange: [40, 10],
+          petalCount: 5,
+          color: "purple",
+          animationOffset: Math.PI / 2,
+          animationStyle: "varyingSpeed", // Rotation with varying speed
+        },
+      ];
+
+      let rotationAngle = 0;
+
+      animate();
+
+      function animate() {
+        ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+
+        flowers.forEach((flower) => {
+          let t = 0;
+          let angle = 0;
+
+          if (flower.animationStyle === "lerp") {
+            t =
+              Math.sin(new Date().getTime() / 1000 + flower.animationOffset) **
+              2;
+          } else if (flower.animationStyle === "rotate") {
+            rotationAngle += 0.01; // Continuous rotation
+            angle = rotationAngle;
+          } else if (flower.animationStyle === "varyingSpeed") {
+            const time = new Date().getTime() / 1000;
+            angle = Math.sin(time) * Math.PI; // Varying speed rotation
+          }
+
+          drawFlower({
+            centerX: flower.centerX,
+            centerY: flower.centerY,
+            innerPad: flower.innerPad,
+            startAngle: 0,
+            endAngle: Math.PI * 2,
+            outerPad: lerp(flower.outerPadRange[0], flower.outerPadRange[1], t),
+            petalRadius: lerp(
+              flower.petalRadiusRange[0],
+              flower.petalRadiusRange[1],
+              t
+            ),
+            petalCount: flower.petalCount,
+            color: flower.color,
+            rotationAngle: angle, // Pass rotation angle
+          });
+        });
+
+        requestAnimationFrame(animate);
+      }
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function drawFlower({
+        centerX,
+        centerY,
+        innerPad,
+        startAngle,
+        endAngle,
+        outerPad,
+        petalRadius,
+        petalCount,
+        color,
+        rotationAngle,
+      }) {
+        // Draw the inner circle
+        ctx.beginPath();
+        ctx.fillStyle = color;
+        ctx.arc(centerX, centerY, innerPad, startAngle, endAngle);
+        ctx.fill();
+
+        // Draw the rotating outer circles (petals)
+        for (let i = 0; i < petalCount; i++) {
+          const petalAngle = (i * 2 * Math.PI) / petalCount + rotationAngle;
+          const petalX = centerX + Math.cos(petalAngle) * outerPad;
+          const petalY = centerY + Math.sin(petalAngle) * outerPad;
+
+          ctx.beginPath();
+          ctx.arc(petalX, petalY, petalRadius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+    </script>
+  </body>
+</html>

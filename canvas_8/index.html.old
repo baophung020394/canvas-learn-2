@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>Keyboard input and Audio playback</h1>
+    <h3>Press key number 1 and 2 on keyboard</h3>
+    <p id="status"></p>
+    <canvas id="myCanvas" height="400" width="400"></canvas>
+
+    <script>
+      const s1 = new Audio("audio.mp3");
+
+      document.addEventListener("keydown", function (info) {
+        if (info.code == "Digit1") {
+          s1.play();
+          document.getElementById("status").textContent = "Playing"
+        }
+
+        if (info.code == "Digit2") {
+          s1.pause()
+          document.getElementById("status").textContent = "Pause"
+        }
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas"></canvas>
+    <script>
+      myCanvas.width = window.innerWidth;
+      myCanvas.height = window.innerHeight;
+
+      const A = { x: 100, y: 300 };
+      const B = { x: 400, y: 300 };
+      const orange = { r: 230, g: 150, b: 0 };
+      const blue = { r: 0, g: 70, b: 160 };
+      const waveAmplitude = 40; // A
+      const waveFrequency = 0.05; // B
+      const wavePhase = 0; // phase offset
+
+      const ctx = myCanvas.getContext("2d");
+
+      animate();
+
+      function animate() {
+        ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+        const sec = new Date().getTime() / 1000;
+        // console.log(sec);
+        // const t = sec - Math.floor(sec);
+        // const t =
+        // const t = (Math.asin(y / A) - B * x) / C;
+        // y(x)=A⋅sin(Bx+C)
+        // console.log("t", t);
+        // const C = vLerp(A, B, t);
+        const speed = 0.5; // tốc độ di chuyển
+        const t = (sec * speed) % 1; // lặp từ 0 → 1
+
+        const x = lerp(A.x, B.x, t);
+        const y = A.y + waveAmplitude * Math.sin(waveFrequency * x + wavePhase);
+
+        const C = { x, y };
+        drawDot(A, "A");
+        drawDot(B, "B");
+        drawDot(C, "C");
+        const { r, g, b } = vLerp(orange, blue, t);
+        myCanvas.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+        requestAnimationFrame(animate);
+      }
+
+      //   function drawDot(ctx, pos, label) {
+      //     ctx.beginPath();
+      //     ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+      //     ctx.fillStyle = "red";
+      //     ctx.fill();
+      //     ctx.fillText(label, pos.x + 10, pos.y);
+      //   }
+
+      function drawDot(pos, label) {
+        ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.strokeStyle = "black";
+        ctx.arc(pos.x, pos.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "bold 14px Arial";
+        ctx.fillText(label, pos.x, pos.y);
+      }
+
+      function vLerp(A, B, t) {
+        const res = {};
+        for (let attr in A) {
+          res[attr] = lerp(A[attr], B[attr], t);
+        }
+        return res;
+      }
+
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      //   function animate() {
+      //     drawDot(C, "C");
+      //   }
+
+      //   requestAnimationFrame(() => {
+      //     animate();
+      //     for(let i = 0; i < 100; i++) {
+      //       requestAnimationFrame(animate);
+      //     }
+      //   });
+    </script>
+  </body>
+</html>

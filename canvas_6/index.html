@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas
+      id="myCanvas"
+      height="400"
+      width="400"
+      style="background-color: silver"
+    ></canvas>
+
+    <canvas
+      id="myCanvas2"
+      height="400"
+      width="400"
+      style="background-color: pink"
+    ></canvas>
+
+    <script>
+      const el = document.getElementById("myCanvas");
+      const ctx = el.getContext("2d");
+
+      const el2 = document.getElementById("myCanvas2");
+      const ctx2 = el2.getContext("2d");
+
+      const heartImage = new Image();
+      heartImage.src = "heart.png";
+
+      const maxY = 90;
+      const rangeY = 100;
+      let p2 = 0;
+
+      animate2();
+      function animate2() {
+        p2 = p2 + 0.02;
+
+        if (p2 > 1) {
+          p2 = 0;
+        }
+
+        const y = maxY - Math.abs(Math.sin(p2 * Math.PI)) * rangeY;
+
+        ctx2.clearRect(0, 0, el2.width, el2.height);
+
+        ctx2.drawImage(heartImage, 100, y, 200, 200);
+
+        ctx2.font = "30px Arial";
+        ctx2.textBaseline = "middle";
+        ctx2.textAlign = "center";
+        ctx2.fillStyle = "red";
+        ctx2.fillText("HTML canvas", 200, 300);
+
+        requestAnimationFrame(animate2);
+      }
+
+      //   const minRad = 10;
+      //   const rangeRad = 20;
+      //   let p = 0;
+
+      //   let x = 200;
+      //   let y = 200;
+
+      //   animate();
+
+      //   function animate() {
+      //     requestAnimationFrame(animate);
+      //     drawEye();
+      //     // p = p + 0.02;
+      //     // if (p > 1) {
+      //     //   p = 0;
+      //     // }
+
+      //     // const rad = minRad + rangeRad * p;
+
+      //     // ctx.clearRect(0, 0, el.width, el.height);
+      //     // ctx.beginPath();
+      //     // ctx.arc(x, y, rad, 0, Math.PI * 2);
+      //     // ctx.stroke();
+      //   }
+
+      //   el.addEventListener("mousemove", function (info) {
+      //     // x = info.x;
+      //     // y = info.y;
+
+      //     const rect = el.getBoundingClientRect();
+      //     mouseX = event.clientX - rect.left;
+      //     mouseY = event.clientY - rect.top;
+      //   });
+
+      const eyeX = 200;
+      const eyeY = 200;
+      const eyeRadius = 50;
+      const pupilRadius = 15;
+      let mouseX = eyeX;
+      let mouseY = eyeY;
+
+      function drawEye() {
+        ctx.clearRect(0, 0, el.width, el.height);
+
+        // Vẽ mắt (vòng tròn lớn)
+        ctx.beginPath();
+        ctx.arc(eyeX, eyeY, eyeRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        ctx.stroke();
+
+        // Tính toán vị trí con ngươi
+        let dx = mouseX - eyeX;
+        let dy = mouseY - eyeY;
+        let distance = Math.sqrt(dx * dx + dy * dy);
+        let maxPupilMove = eyeRadius - pupilRadius;
+
+        if (distance > maxPupilMove) {
+          dx = (dx / distance) * maxPupilMove;
+          dy = (dy / distance) * maxPupilMove;
+        }
+
+        let pupilX = eyeX + dx;
+        let pupilY = eyeY + dy;
+
+        ctx.beginPath();
+        ctx.arc(pupilX, pupilY, pupilRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "black";
+        ctx.fill();
+      }
+
+      el.addEventListener("mousemove", function (event) {
+        const rect = el.getBoundingClientRect();
+        mouseX = event.clientX - rect.left;
+        mouseY = event.clientY - rect.top;
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        drawEye();
+      }
+
+      animate();
+    </script>
+  </body>
+</html>

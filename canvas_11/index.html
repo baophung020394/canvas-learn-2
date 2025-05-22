@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animated Yin-Yang</title>
+  </head>
+  <body>
+    <canvas
+      id="myCanvas"
+      width="700"
+      height="700"
+      style="background-color: deepskyblue"
+    ></canvas>
+
+    <script>
+      const ctx = myCanvas.getContext("2d");
+      let rotation = 0;
+      
+      function drawYinYang(centerX, centerY, radius, rotation) {
+        ctx.save();
+        // Move to center point and rotate
+        ctx.translate(centerX, centerY);
+        ctx.rotate(rotation);
+        ctx.translate(-centerX, -centerY);
+        
+        const left = centerX - radius;
+        const top_ = centerY - radius;
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+        ctx.clip();
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(left, top_, radius, radius * 2);
+        ctx.fillStyle = "black";
+        ctx.fillRect(centerX, top_, radius, radius * 2);
+        
+        ctx.beginPath();
+        ctx.arc(centerX, centerY - radius / 2, radius / 2, 0, 2 * Math.PI);
+        ctx.fillStyle = "white";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY - radius / 2, radius / 6, 0, 2 * Math.PI);
+        ctx.fillStyle = "black";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY + radius / 2, radius / 2, 0, 2 * Math.PI);
+        ctx.fillStyle = "black";
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(centerX, centerY + radius / 2, radius / 6, 0, 2 * Math.PI);
+        ctx.fillStyle = "white";
+        ctx.fill();
+        
+        ctx.restore();
+      }
+
+      function animate() {
+        // Clear canvas
+        ctx.clearRect(0, 0, myCanvas.width, myCanvas.height);
+        
+        // Update rotation
+        rotation += 0.02;
+        
+        // Draw both Yin-Yang symbols with current rotation
+        drawYinYang(myCanvas.width / 2 - 100, myCanvas.height / 2, 100, rotation);
+        drawYinYang(myCanvas.width / 2 + 110, myCanvas.height / 2, 100, -rotation); // Counter-rotation
+        
+        // Request next frame
+        requestAnimationFrame(animate);
+      }
+
+      // Start animation
+      animate();
+    </script>
+  </body>
+</html>

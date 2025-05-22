@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas
+      id="myCanvas"
+      height="400"
+      width="400"
+      style="background-color: yellow"
+    ></canvas>
+
+    <script>
+      const el = document.getElementById("myCanvas");
+      const ctx = el.getContext("2d");
+
+      ctx.beginPath();
+      ctx.moveTo(100, 300); // x,y
+      ctx.lineTo(300, 300);
+      //   ctx.moveTo(100, 300); // x,y
+      ctx.lineTo(300, 100);
+      ctx.lineTo(200, 50);
+      ctx.lineTo(100, 100);
+      ctx.lineTo(100, 300);
+      ctx.stroke();
+
+      ctx.beginPath();
+      let i = 0;
+      let r;
+      //   while (i < 8) {
+      //     setTimeout(() => {
+      //       r = i;
+      //       i++;
+      //     }, 1000);
+
+      //   }
+      ctx.arc(200, 200, 50, 0, 2 * Math.PI); // standard 0,7
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.rect(100, 300, 200, 20); // standard 0,7
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(252, 252, 20, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(247, 246, 8, 0, 2 * Math.PI);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(215, 257);
+      ctx.lineTo(237, 257);
+      ctx.lineTo(236, 245);
+      // ctx.lineTo(215, 257);
+      ctx.closePath();
+      ctx.fillStyle = "yellow"; // Đặt màu nền là trắng
+      ctx.fill(); // Đổ màu nền cho tam giác
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.arc(268, 270, 15, 5, 3.1);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(265, 300);
+      ctx.lineTo(265, 284);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(270, 300);
+      ctx.lineTo(270, 284);
+      ctx.stroke();
+
+      // ctx.beginPath();
+      // ctx.moveTo(264, 266);
+      // ctx.lineTo(270, 275);
+      // ctx.lineTo(290, 270);
+      // ctx.lineTo(264, 266);
+      // ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(264, 266); 
+      ctx.lineTo(270, 275); 
+      ctx.lineTo(290, 270);
+      ctx.closePath();
+
+      ctx.fillStyle = "yellow";
+      ctx.fill();
+      ctx.stroke(); 
+
+      ctx.beginPath();
+      ctx.moveTo(30, 120);
+      ctx.lineTo(200, 30);
+      ctx.lineTo(370, 120);
+      ctx.lineTo(340, 140);
+      ctx.lineTo(200, 65);
+      ctx.lineTo(60, 140);
+      ctx.lineTo(30, 120);
+      ctx.stroke()
+
+    </script>
+  </body>
+</html>

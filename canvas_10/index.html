@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <canvas
+      id="myCanvas"
+      width="700"
+      height="700"
+      style="background-color: deepskyblue"
+    ></canvas>
+
+    <script>
+      const ctx = myCanvas.getContext("2d");
+      const centerX = myCanvas.width / 2;
+      const centerY = myCanvas.height / 2;
+      const radius = 50;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = 'white';
+      ctx.fillRect(
+        centerX - radius,
+        centerY - radius,
+        radius,
+        radius * 2
+      )
+    </script>
+  </body>
+</html>

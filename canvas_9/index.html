@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Animated Pattern</title>
+    <style>
+      body {
+        /* background-color: blue; */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="myCanvas" width="900" height="600"></canvas>
+
+    <script>
+      const canvas = document.getElementById("myCanvas");
+      const ctx = canvas.getContext("2d");
+
+      const size = 50;
+      const speed = 0.5;
+      let offsets = [];
+      let speeds = [];
+
+      for (let y = 0; y <= canvas.height / size; y++) {
+        offsets.push(0);
+        speeds.push(y % 2 === 0 ? speed : -speed);
+      }
+
+      function drawPattern() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let row = 0; row <= canvas.height / size; row++) {
+          // Cập nhật offset mà không cần modulo
+          offsets[row] += speeds[row];
+
+          for (let col = -2; col <= canvas.width / size + 2; col++) {
+            let x = col * size + offsets[row];
+            let y = row * size;
+
+            // Tính toán màu dựa trên vị trí thực tế của ô
+            let effectiveCol = Math.floor((x - offsets[row]) / size);
+            ctx.fillStyle = effectiveCol % 2 === 0 ? "cyan" : "white";
+            ctx.strokeStyle = "gray";
+            ctx.fillRect(x, y, size, size);
+            ctx.strokeRect(x, y, size, size);
+          }
+        }
+
+        requestAnimationFrame(drawPattern);
+      }
+
+      drawPattern();
+    </script>
+  </body>
+</html>
