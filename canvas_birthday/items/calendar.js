@@ -1,4 +1,4 @@
-function drawCalendar(ctx, x, y, size, hue, day = 15) {
+function drawCalendar(ctx, x, y, size, hue, day = 14) {
   const top = y - size / 2;
   const left = x - size / 2;
   const bottom = y + size / 2;
