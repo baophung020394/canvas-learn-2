@@ -100,24 +100,18 @@ function drawBigTree() {
 
 drawBigTree();
 
-// function clickItem(item, idx) {
-//   console.log("Item được click:");
-//   console.log("  ➤ Function:", item.drawFunction?.name);
-//   console.log("levels", window.treeLevels);
-//   console.log("index", idx);
-//   // Ví dụ: bạn có thể gọi addItemToTree
-//   if(idx === 14) {
-//     window.birthdayActive = true;
-//   } else {
-//     window.birthdayActive = false;
-//   }
-//   addItemToTree(item.drawFunction, item.day, Math.random() * 360);
-// }
+// Add a global variable to track game mode
+let gameMode = false;
 
 function clickItem(item, idx) {
   console.log("Item được click:");
   console.log("  ➤ Function:", item.drawFunction?.name);
   console.log("index", idx);
+
+  // If in game mode and clicking something other than day 24, ignore it
+  if (gameMode && idx !== 24) {
+    return;
+  }
 
   if (idx === 14) {
     window.birthdayActive = true;
@@ -149,6 +143,9 @@ function clickItem(item, idx) {
       // Start the falling presents game
       window.presentFall.start();
       
+      // Set game mode to true
+      gameMode = true;
+      
       // Switch to manual control mode for Santa if we're in auto mode
       if (typeof isAutoMoving !== 'undefined' && isAutoMoving) {
         // Simulate space key press to switch to manual mode
@@ -178,6 +175,7 @@ function clickItem(item, idx) {
         <p>Collect falling items to earn points.</p>
         <p>Each item is worth 1-24 points.</p>
         <p>Reach 240 points to receive a special gift!</p>
+        <p>Press ESC to exit the game.</p>
         <button id="close-instructions" style="margin-top:10px;padding:5px 10px;">Got it!</button>
       `;
       document.body.appendChild(instructions);
@@ -185,6 +183,9 @@ function clickItem(item, idx) {
       document.getElementById('close-instructions').addEventListener('click', () => {
         instructions.remove();
       });
+      
+      // Add event listener for ESC key to exit game
+      window.addEventListener('keydown', handleEscKey);
       
       // Don't add the Christmas tree item to the tree
       return;
@@ -215,6 +216,39 @@ function clickItem(item, idx) {
 
   addItemToTree(item.drawFunction, item.day, Math.random() * 360);
 }
+
+// Function to handle ESC key press
+function handleEscKey(event) {
+  if (event.key === 'Escape') {
+    // Exit game mode
+    gameMode = false;
+    
+    // Stop the present-fall game
+    if (window.presentFall) {
+      window.presentFall.stop();
+    }
+    
+    // Remove the event listener
+    window.removeEventListener('keydown', handleEscKey);
+    
+    // Remove game instructions if they exist
+    const instructions = document.getElementById('game-instructions');
+    if (instructions) {
+      instructions.remove();
+    }
+    
+    // Return to auto mode for Santa
+    if (typeof isAutoMoving !== 'undefined' && !isAutoMoving) {
+      // Simulate space key press to switch back to auto mode
+      const spaceEvent = new KeyboardEvent('keydown', {
+        key: ' ',
+        code: 'Space'
+      });
+      window.dispatchEvent(spaceEvent);
+    }
+  }
+}
+
 function addItemToTree(drawFunction, day, hue) {
   const canvasItem = document.createElement("canvas");
   canvasItem.width = cellSize;

@@ -266,9 +266,18 @@
       return;
     }
     
+    // Don't add more points if we've already reached the required score
+    if (score >= requiredScore) {
+      console.log(`Maximum score of ${requiredScore} already reached!`);
+      return;
+    }
+    
     // Ensure score is a number and increment it
     const oldScore = score;
-    score = (parseInt(score) || 0) + points;
+    
+    // Calculate new score, but cap it at requiredScore
+    score = Math.min((parseInt(score) || 0) + points, requiredScore);
+    
     console.log(`Score updated: ${oldScore} + ${points} = ${score}`);
     
     // Update the display with the new score
@@ -280,7 +289,55 @@
     // Check if we've reached the required score
     if (score >= requiredScore && !bigPresentRevealed) {
       revealBigPresent();
+      
+      // Show congratulations message
+      showCongratulationsMessage();
     }
+  }
+  
+  function showCongratulationsMessage() {
+    // Create congratulations message
+    const congrats = document.createElement('div');
+    congrats.id = 'congrats-message';
+    congrats.style.position = 'fixed';
+    congrats.style.top = '30%';
+    congrats.style.left = '50%';
+    congrats.style.transform = 'translate(-50%, -50%)';
+    congrats.style.backgroundColor = 'rgba(0, 0, 0, 0.8)';
+    congrats.style.color = '#FFD700'; // Gold text
+    congrats.style.padding = '20px 30px';
+    congrats.style.borderRadius = '10px';
+    congrats.style.fontFamily = 'Arial, sans-serif';
+    congrats.style.fontSize = '24px';
+    congrats.style.textAlign = 'center';
+    congrats.style.zIndex = '3000';
+    congrats.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.5)';
+    congrats.style.animation = 'pulse 1s infinite alternate';
+    
+    // Add animation style
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes pulse {
+        from { transform: translate(-50%, -50%) scale(1); }
+        to { transform: translate(-50%, -50%) scale(1.05); }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    congrats.innerHTML = `
+      <h2>Congratulations!</h2>
+      <p>You've reached ${requiredScore} points!</p>
+      <p>Click the present that appeared to claim your gift!</p>
+    `;
+    
+    document.body.appendChild(congrats);
+    
+    // Remove after 5 seconds
+    setTimeout(() => {
+      congrats.style.opacity = '0';
+      congrats.style.transition = 'opacity 1s';
+      setTimeout(() => congrats.remove(), 1000);
+    }, 5000);
   }
   
   // Simple sound effect for item collection
