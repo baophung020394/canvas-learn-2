@@ -28,31 +28,6 @@ drawItemFunctions[23] = drawReindeer;
 drawItemFunctions[24] = drawChristmasTree;
 
 for (let day = 1; day <= 24; day++) {
-  drawItemFunctions[1] = drawStar;
-  drawItemFunctions[2] = drawBall;
-  drawItemFunctions[3] = drawSock;
-  drawItemFunctions[4] = drawCane;
-  drawItemFunctions[5] = drawBow;
-  drawItemFunctions[6] = drawBell;
-  drawItemFunctions[7] = drawSnowBall;
-  drawItemFunctions[8] = drawCandle;
-  drawItemFunctions[9] = drawGlove;
-  drawItemFunctions[10] = drawCandy;
-  drawItemFunctions[11] = drawSnowFlake;
-  drawItemFunctions[12] = drawSledge;
-  drawItemFunctions[13] = drawTree;
-  drawItemFunctions[14] = drawCalendar;
-  drawItemFunctions[15] = drawHat;
-  drawItemFunctions[16] = drawPresent;
-  drawItemFunctions[17] = drawCookie;
-  drawItemFunctions[18] = drawGlobe;
-  drawItemFunctions[19] = drawBells;
-  drawItemFunctions[20] = drawSnowMan;
-  drawItemFunctions[21] = drawCrown;
-  drawItemFunctions[22] = drawSkate;
-  drawItemFunctions[23] = drawReindeer;
-  drawItemFunctions[24] = drawChristmasTree;
-
   const canvas = document.createElement("canvas");
   canvas.width = cellSize;
   canvas.height = cellSize;
@@ -210,6 +185,9 @@ function clickItem(item, idx) {
       document.getElementById('close-instructions').addEventListener('click', () => {
         instructions.remove();
       });
+      
+      // Don't add the Christmas tree item to the tree
+      return;
     }
   } else {
     window.birthdayActive = false;

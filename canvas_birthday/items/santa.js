@@ -339,10 +339,11 @@ function setupKeyboardControls() {
 
 function handleKeyDown(event) {
   // Store the key state
-  keysPressed[event.key.toLowerCase()] = true;
+  const key = event.key.toLowerCase();
+  keysPressed[key] = true;
   
   // Handle space key to toggle movement mode
-  if (event.key === ' ' || event.code === 'Space') {
+  if (key === ' ' || event.code === 'Space') {
     isAutoMoving = !isAutoMoving;
     updateModeIndicator();
     
@@ -354,11 +355,18 @@ function handleKeyDown(event) {
     // Prevent default space behavior (page scrolling)
     event.preventDefault();
   }
+  
+  // Prevent default behavior for movement keys to avoid browser scrolling
+  if (key === 'a' || key === 'd' || 
+      key === 'arrowleft' || key === 'arrowright') {
+    event.preventDefault();
+  }
 }
 
 function handleKeyUp(event) {
   // Clear the key state
-  keysPressed[event.key.toLowerCase()] = false;
+  const key = event.key.toLowerCase();
+  keysPressed[key] = false;
 }
 
 function updateModeIndicator() {
@@ -404,8 +412,9 @@ function animateSanta() {
       }
     } else {
       // Manual keyboard control
-      const moveSpeed = 3; // Faster speed for manual control
+      const moveSpeed = 5; // Faster speed for manual control
       
+      // Use separate conditions for left and right to allow for smoother movement
       if (keysPressed['a'] || keysPressed['arrowleft']) {
         santaX -= moveSpeed;
         santaDirection = -1;
@@ -418,6 +427,9 @@ function animateSanta() {
       // Enforce boundaries for manual control
       santaX = Math.max(santaSize, Math.min(santaCanvas.width - santaSize, santaX));
     }
+    
+    // IMPORTANT: Expose santaX to global scope for present-fall.js to use
+    window.santaX = santaX;
     
     animationTime += 0.1; // Increment animation time
     

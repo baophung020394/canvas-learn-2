@@ -28,6 +28,9 @@
   // Draw functions for the items, referencing the existing ones
   const drawItemFunctions = [];
   
+  // Add a flag to track if gameLoop is running
+  let gameLoopRunning = false;
+  
   // Falling item class
   class FallingItem {
     constructor(width, height) {
@@ -37,18 +40,31 @@
     reset(width, height) {
       this.x = Math.random() * (width - itemSize);
       this.y = Math.random() * -300 - itemSize; // Start above the screen
-      this.speed = 1 + Math.random() * 3;
+      // Slow down the fall speed
+      this.speed = 0.7 + Math.random() * 2;
+      // Ensure type is a valid number between 1-24
       this.type = Math.floor(Math.random() * itemCount) + 1; // 1-24
+      // Ensure value equals the type
       this.value = this.type; // Score value equals the item type
       this.collected = false;
       this.size = itemSize;
       this.rotation = Math.random() * 360;
       this.rotationSpeed = Math.random() * 4 - 2;
       this.hue = Math.random() * 360;
+      
+      // Collection animation properties
+      this.collectAnimation = 0;
     }
     
     update() {
-      if (this.collected) return;
+      // Handle collection animation
+      if (this.collected) {
+        this.collectAnimation += 5;
+        if (this.collectAnimation >= 100) {
+          this.reset(width, height);
+        }
+        return;
+      }
       
       this.y += this.speed;
       this.rotation += this.rotationSpeed;
@@ -61,22 +77,104 @@
       // Check collision with Santa
       if (this.checkCollision()) {
         this.collected = true;
+        // Log the collision for debugging
+        console.log(`Collision detected! Item type: ${this.type}, value: ${this.value}, position: (${Math.round(this.x)}, ${Math.round(this.y)})`);
         addScore(this.value);
         createScorePopup(this.x, this.y, this.value);
       }
     }
     
     checkCollision() {
-      // Simple AABB collision detection
-      return !this.collected && 
-             this.x < santaPosition.x + santaPosition.width &&
-             this.x + this.size > santaPosition.x &&
-             this.y < santaPosition.y + santaPosition.height &&
-             this.y + this.size > santaPosition.y;
+      // Make sure Santa position is defined
+      if (!santaPosition || typeof santaPosition.x === 'undefined' || 
+          santaPosition.x === 0 && santaPosition.y === 0 && 
+          santaPosition.width === 0 && santaPosition.height === 0) {
+        console.warn("Invalid Santa position for collision check:", santaPosition);
+        return false;
+      }
+      
+      // Very simple and forgiving collision detection - just check if the item
+      // is anywhere near Santa's sleigh area with extra padding
+      const itemCenterX = this.x + this.size/2;
+      const itemCenterY = this.y + this.size/2;
+      
+      // The actual sleigh position on screen
+      const sleighLeft = santaPosition.x;
+      const sleighRight = santaPosition.x + santaPosition.width;
+      const sleighTop = santaPosition.y;
+      const sleighBottom = santaPosition.y + santaPosition.height;
+      
+      // Add extra padding around the sleigh for more forgiving collection
+      const padding = this.size * 0.7; // Increased padding for more forgiving collision
+      
+      // For items that are close to Santa, log their positions for debugging
+      const isNearSanta = 
+        Math.abs(itemCenterY - sleighTop) < 100 && 
+        Math.abs(itemCenterX - (sleighLeft + (sleighRight - sleighLeft)/2)) < 100;
+      
+      if (isNearSanta) {
+        console.log(`Item near Santa - ID: ${this.type}, Item: (${Math.round(itemCenterX)}, ${Math.round(itemCenterY)}), Santa: L${Math.round(sleighLeft)} R${Math.round(sleighRight)} T${Math.round(sleighTop)} B${Math.round(sleighBottom)}`);
+      }
+      
+      // Check if the item's center is within the padded sleigh area
+      const isColliding = !this.collected && 
+             itemCenterX >= sleighLeft - padding &&
+             itemCenterX <= sleighRight + padding &&
+             itemCenterY >= sleighTop - padding && 
+             itemCenterY <= sleighBottom + padding;
+      
+      return isColliding;
     }
     
     draw(ctx) {
-      if (this.collected) return;
+      if (this.collected) {
+        // Draw collection animation - shrink and fade out
+        const scale = 1 + (this.collectAnimation / 50);
+        const alpha = 1 - (this.collectAnimation / 100);
+        
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.translate(this.x + this.size/2, this.y + this.size/2);
+        ctx.rotate(this.rotation * Math.PI / 180);
+        ctx.scale(scale, scale);
+        
+        // Draw a sparkle effect
+        if (this.collectAnimation < 50) {
+          ctx.fillStyle = 'white';
+          for (let i = 0; i < 8; i++) {
+            const angle = (i / 8) * Math.PI * 2;
+            const dist = (this.size/2) * (this.collectAnimation / 50);
+            const x = Math.cos(angle) * dist;
+            const y = Math.sin(angle) * dist;
+            ctx.beginPath();
+            ctx.arc(x, y, 2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+        
+        // Draw the item using the appropriate draw function
+        const drawFunc = drawItemFunctions[this.type];
+        if (drawFunc) {
+          drawFunc(ctx, 0, 0, this.size, this.hue);
+        } else {
+          // Fallback - simple present box
+          ctx.fillStyle = `hsl(${this.hue}, 80%, 50%)`;
+          ctx.fillRect(-this.size/2, -this.size/2, this.size, this.size);
+          
+          // Ribbon
+          ctx.strokeStyle = '#FFF';
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(0, -this.size/2);
+          ctx.lineTo(0, this.size/2);
+          ctx.moveTo(-this.size/2, 0);
+          ctx.lineTo(this.size/2, 0);
+          ctx.stroke();
+        }
+        
+        ctx.restore();
+        return;
+      }
       
       ctx.save();
       ctx.translate(this.x + this.size/2, this.y + this.size/2);
@@ -103,6 +201,15 @@
       }
       
       ctx.restore();
+      
+      // Debug info for hitbox visualization
+      if (frameCount % 180 === 0 && Math.random() < 0.1) {  // Show only occasionally
+        ctx.strokeStyle = 'rgba(255,255,0,0.3)';
+        ctx.strokeRect(this.x, this.y, this.size, this.size);
+        ctx.fillStyle = 'white';
+        ctx.font = '10px Arial';
+        ctx.fillText(`${this.type}`, this.x, this.y - 5);
+      }
     }
   }
   
@@ -153,8 +260,22 @@
   }
   
   function addScore(points) {
-    score += points;
+    // Validate points is a number
+    if (typeof points !== 'number' || isNaN(points) || points <= 0) {
+      console.error(`Invalid points value: ${points}`);
+      return;
+    }
+    
+    // Ensure score is a number and increment it
+    const oldScore = score;
+    score = (parseInt(score) || 0) + points;
+    console.log(`Score updated: ${oldScore} + ${points} = ${score}`);
+    
+    // Update the display with the new score
     updateScoreDisplay();
+    
+    // Play a collection sound effect
+    playCollectionSound(points);
     
     // Check if we've reached the required score
     if (score >= requiredScore && !bigPresentRevealed) {
@@ -162,9 +283,40 @@
     }
   }
   
+  // Simple sound effect for item collection
+  function playCollectionSound(points) {
+    try {
+      const audio = new Audio();
+      // Higher pitched sound for higher value items
+      const frequency = 200 + (points * 25); 
+      audio.src = `data:audio/wav;base64,UklGRisAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQcAAAD//wAAAAA=`;
+      audio.volume = 0.2; // Keep the volume low
+      audio.play().catch(err => {
+        // Silently ignore autoplay restrictions
+      });
+    } catch (e) {
+      // Silently ignore if audio fails
+    }
+  }
+  
   function updateScoreDisplay() {
     if (scoreDisplay) {
+      // Make score display more visible with larger text and colors
       scoreDisplay.textContent = `Score: ${score} / ${requiredScore}`;
+      scoreDisplay.style.fontSize = '18px';
+      scoreDisplay.style.fontWeight = 'bold';
+      scoreDisplay.style.padding = '10px 15px';
+      
+      // Add a temporary highlight effect when score changes
+      scoreDisplay.style.transition = 'background-color 0.3s';
+      scoreDisplay.style.backgroundColor = 'rgba(255,215,0,0.3)';
+      
+      // Reset background after a brief moment
+      setTimeout(() => {
+        if (scoreDisplay) {
+          scoreDisplay.style.backgroundColor = 'rgba(0,0,0,0.7)';
+        }
+      }, 300);
     }
   }
   
@@ -196,11 +348,13 @@
       scoreDisplay.style.top = '20px';
       scoreDisplay.style.padding = '10px 15px';
       scoreDisplay.style.backgroundColor = 'rgba(0,0,0,0.7)';
-      scoreDisplay.style.color = '#FFF';
+      scoreDisplay.style.color = '#FFFFFF';
       scoreDisplay.style.borderRadius = '5px';
       scoreDisplay.style.fontFamily = 'Arial, sans-serif';
       scoreDisplay.style.fontWeight = 'bold';
+      scoreDisplay.style.fontSize = '18px';
       scoreDisplay.style.zIndex = '1001';
+      scoreDisplay.style.textShadow = '1px 1px 2px #000';
       scoreDisplay.style.display = 'none'; // Initially hidden
       document.body.appendChild(scoreDisplay);
     }
@@ -355,6 +509,7 @@
     ctx.restore();
   }
   
+  // This function is now a helper function and is not called directly
   function init() {
     // Access the drawItemFunctions from the global scope
     for (let i = 1; i <= 24; i++) {
@@ -363,43 +518,118 @@
     
     initCanvas();
     
-    // Create falling items
-    fallingItems = Array.from({ length: 20 }, () => new FallingItem(width, height));
+    // Create falling items - reduce count to 10
+    fallingItems = Array.from({ length: 10 }, () => new FallingItem(width, height));
+  }
+  
+  function start() {
+    score = 0;
+    bigPresentRevealed = false;
+    bigPresentOpened = false;
+    bigPresent.opening = 0;
     
-    // Start animation
+    // Initialize canvas and scoreDisplay first
+    initCanvas();
+    
+    // Access the drawItemFunctions from the global scope
+    for (let i = 1; i <= 24; i++) {
+      drawItemFunctions[i] = window.drawItemFunctions ? window.drawItemFunctions[i] : null;
+    }
+    
+    // Then access scoreDisplay
+    if (scoreDisplay) {
+      scoreDisplay.style.display = 'block';
+      updateScoreDisplay();
+    }
+    
+    // Start the game loop if not already active
     if (!isActive) {
       isActive = true;
-      gameLoop();
+      
+      // Create falling items - reduce the initial count from 20 to 10
+      fallingItems = Array.from({ length: 10 }, () => new FallingItem(width, height));
+      
+      // Make sure we don't start multiple game loops
+      if (!gameLoopRunning) {
+        gameLoopRunning = true;
+        gameLoop();
+      }
     }
   }
   
   function gameLoop() {
-    if (!isActive) return;
+    if (!isActive) {
+      gameLoopRunning = false;
+      return;
+    }
+    
+    // Make sure canvas and context exist
+    if (!canvas || !ctx) {
+      isActive = false;
+      gameLoopRunning = false;
+      return;
+    }
     
     ctx.clearRect(0, 0, width, height);
     
     // Update Santa position from global variable
-    if (window.santaX !== undefined) {
-      const santaSize = 60;
-      const sleighSize = santaSize * 1.2;
+    // IMPORTANT: Make sure we can access the global santaX variable
+    const globalSantaX = window.santaX;
+    
+    if (typeof globalSantaX !== 'undefined' && globalSantaX !== null) {
+      // Log the actual santaX value periodically
+      if (frameCount % 60 === 0) {
+        console.log("Debug - Santa position:", window.santaX);
+      }
       
-      // Approximate the sleigh position and size
+      const santaSize = 60;
+      const sleighSize = santaSize * 2.0; // Reduced width for more accurate collision
+      
+      // Update santaPosition for collision detection
       santaPosition = {
-        x: window.santaX - sleighSize * 0.5,
-        y: height - 100,  // Assuming Santa is at the bottom
+        x: globalSantaX - sleighSize * 0.5,
+        y: height - 100,  // Adjusted to match Santa's actual position
         width: sleighSize,
         height: santaSize
       };
+      
+      // Always show the collision box for debugging
+      ctx.strokeStyle = 'rgba(255,0,0,0.2)';
+      ctx.strokeRect(
+        santaPosition.x, 
+        santaPosition.y, 
+        santaPosition.width, 
+        santaPosition.height
+      );
+    } else {
+      console.warn("Santa's position is undefined or null:", globalSantaX);
+      
+      // Set a default position if santaX is not available
+      // This ensures collision detection can still work
+      santaPosition = {
+        x: width / 2 - 60,
+        y: height - 100,
+        width: 120,
+        height: 60
+      };
     }
     
-    // Only spawn new items occasionally
+    // Only spawn new items occasionally - reduce spawn rate
     frameCount++;
-    if (frameCount % 30 === 0 && fallingItems.length < 50) {
+    // Changed from mod 30 to mod 60, and max items from 50 to 25
+    if (frameCount % 60 === 0 && fallingItems.length < 25) {
       fallingItems.push(new FallingItem(width, height));
     }
     
     // Update and draw falling items
     fallingItems.forEach(item => {
+      // Fix the issue with all items having the same ID
+      // Make sure each item has a proper type between 1-24
+      if (item.type === undefined || item.type < 1 || item.type > 24) {
+        item.type = Math.floor(Math.random() * itemCount) + 1;
+        item.value = item.type;
+      }
+      
       item.update();
       item.draw(ctx);
     });
@@ -417,20 +647,9 @@
     requestAnimationFrame(gameLoop);
   }
   
-  function start() {
-    score = 0;
-    bigPresentRevealed = false;
-    bigPresentOpened = false;
-    bigPresent.opening = 0;
-    
-    scoreDisplay.style.display = 'block';
-    updateScoreDisplay();
-    
-    init();
-  }
-  
   function stop() {
     isActive = false;
+    gameLoopRunning = false;
     
     // Hide score display
     if (scoreDisplay) {
@@ -439,15 +658,20 @@
     
     // Remove canvas
     if (canvas) {
+      // Remove event listener for clicks
+      canvas.removeEventListener('click', handleCanvasClick);
+      
+      // Remove the canvas from the DOM
       canvas.remove();
       canvas = null;
     }
     
     // Remove event listener
     window.removeEventListener('resize', resize);
-    if (canvas) {
-      canvas.removeEventListener('click', handleCanvasClick);
-    }
+    
+    // Clear falling items
+    fallingItems = [];
+    scorePopups = [];
   }
   
   // Expose functions to global scope
