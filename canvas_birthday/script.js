@@ -116,6 +116,11 @@ function drawBigTree() {
   if (typeof drawTreeNotBall === "function") {
     drawTreeNotBall(ctx, x, y, size, hue);
   }
+  
+  // Initialize Santa animation after drawing the tree
+  if (typeof createSantaAnimation === "function") {
+    createSantaAnimation();
+  }
 }
 
 drawBigTree();
@@ -160,16 +165,73 @@ function clickItem(item, idx) {
     ).then((images) => {
       window.initSnowWithImages(images); // ✅ ảnh rơi
     });
+  } else if (idx === 24) {
+    // Activate the present-fall game when Christmas tree (item 24) is clicked
+    if (window.presentFall) {
+      // First stop any existing game
+      window.presentFall.stop();
+      
+      // Start the falling presents game
+      window.presentFall.start();
+      
+      // Switch to manual control mode for Santa if we're in auto mode
+      if (typeof isAutoMoving !== 'undefined' && isAutoMoving) {
+        // Simulate space key press to switch to manual mode
+        const spaceEvent = new KeyboardEvent('keydown', {
+          key: ' ',
+          code: 'Space'
+        });
+        window.dispatchEvent(spaceEvent);
+      }
+      
+      // Display game instructions
+      const instructions = document.createElement('div');
+      instructions.id = 'game-instructions';
+      instructions.style.position = 'fixed';
+      instructions.style.top = '60px';
+      instructions.style.left = '20px';
+      instructions.style.backgroundColor = 'rgba(0,0,0,0.7)';
+      instructions.style.color = 'white';
+      instructions.style.padding = '10px 15px';
+      instructions.style.borderRadius = '5px';
+      instructions.style.fontFamily = 'Arial, sans-serif';
+      instructions.style.zIndex = '2000';
+      instructions.style.maxWidth = '300px';
+      instructions.innerHTML = `
+        <h3>Present Collection Game!</h3>
+        <p>Use A and D keys to move Santa's sleigh.</p>
+        <p>Collect falling items to earn points.</p>
+        <p>Each item is worth 1-24 points.</p>
+        <p>Reach 240 points to receive a special gift!</p>
+        <button id="close-instructions" style="margin-top:10px;padding:5px 10px;">Got it!</button>
+      `;
+      document.body.appendChild(instructions);
+      
+      document.getElementById('close-instructions').addEventListener('click', () => {
+        instructions.remove();
+      });
+    }
   } else {
     window.birthdayActive = false;
 
     // ✅ Xóa đúng canvas tuyết
     const snowCanvas = document.getElementById("snow-canvas");
     if (snowCanvas) snowCanvas.remove();
+    
+    // Stop the present-fall game if it's running
+    if (window.presentFall) {
+      window.presentFall.stop();
+    }
 
     // ✅ Gọi lại tuyết trắng mặc định
     if (typeof window.initSnowWithImages === "function") {
       window.initSnowWithImages([]);
+    }
+    
+    // Remove game instructions if they exist
+    const instructions = document.getElementById('game-instructions');
+    if (instructions) {
+      instructions.remove();
     }
   }
 
